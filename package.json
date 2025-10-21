@@ -1,0 +1,31 @@
+{
+  "name": "docmost-oss-mcp-shim",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.12.2",
+    "axios-cookiejar-support": "^6.0.4",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "tough-cookie": "^5.1.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.38.0",
+    "editorconfig-checker": "^6.1.0",
+    "eslint": "^9.38.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.5",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2"
+  }
+}
