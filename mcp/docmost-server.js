@@ -24,11 +24,6 @@ const http = axios.create({
 const server = new McpServer({
   name: 'docmost-oss-mcp-bridge',
   version: packageJson.version,
-  capabilities: {
-    tools: {
-      listChanged: true,
-    },
-  },
 });
 
 // ---- Schemas ----
@@ -116,68 +111,6 @@ server.registerTool(
     return { content: [{ type: 'json', json: data }] };
   }
 );
-
-// ---- Tools List Handler ----
-server.setRequestHandler('tools/list', async () => {
-  return {
-    tools: [
-      {
-        name: 'docmost.listSpaces',
-        title: 'List spaces/workspaces in Docmost',
-        description: 'Returns spaces the shim can access',
-        inputSchema: { type: 'object', properties: {} },
-      },
-      {
-        name: 'docmost.search',
-        title: 'Search pages',
-        description: 'Search Docmost content',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            query: { type: 'string' },
-            spaceId: { type: 'string' },
-          },
-          required: ['query'],
-        },
-      },
-      {
-        name: 'docmost.createPage',
-        title: 'Create a page',
-        description: 'Create a new page in a space',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            spaceId: { type: 'string' },
-            title: { type: 'string' },
-            content: { type: 'string' },
-            parentId: { type: 'string' },
-          },
-          required: ['spaceId', 'title'],
-        },
-      },
-      {
-        name: 'docmost.updatePage',
-        title: 'Update a page',
-        description: 'Update title/content by pageId',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            pageId: { type: 'string' },
-            title: { type: 'string' },
-            content: { type: 'string' },
-          },
-          required: ['pageId'],
-        },
-      },
-      {
-        name: 'docmost.health',
-        title: 'Shim health',
-        description: 'Check shim health',
-        inputSchema: { type: 'object', properties: {} },
-      },
-    ],
-  };
-});
 
 // ---- Start (stdio transport) ----
 const transport = new StdioServerTransport();
