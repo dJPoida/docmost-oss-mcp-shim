@@ -182,6 +182,22 @@ npm run format  # format with Prettier
 DEBUG_SHIM=1 npm start  # enable verbose logging
 ```
 
+### Publishing New Versions
+
+To release a new version:
+
+1. **Update version** in `package.json`
+2. **Commit and tag** the release:
+   ```bash
+   git commit -am "commit message"
+   git tag v0.2.4
+   git push && git push --tags
+   ```
+3. **MCP users** can then update their Cursor config to use the new version:
+   ```json
+   "--package=github:dJPoida/docmost-oss-mcp-shim#v0.2.4"
+   ```
+
 ### Project structure
 
 ```
