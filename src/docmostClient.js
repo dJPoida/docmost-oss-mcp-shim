@@ -110,7 +110,27 @@ export async function searchDocs({ query, spaceId }) {
 
 export async function createPage({ spaceId, title, content, parentId }) {
   // POST /api/pages/create
-  const body = { spaceId, title, content };
+  // Docmost uses TipTap editor which expects content as JSON, not markdown
+  // If content is a string, wrap it in a basic TipTap document structure
+  let formattedContent = content;
+  if (typeof content === 'string') {
+    formattedContent = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'text',
+              text: content,
+            },
+          ],
+        },
+      ],
+    };
+  }
+
+  const body = { spaceId, title, content: formattedContent };
   if (parentId) body.parentId = parentId;
   return postApi('/api/pages/create', body);
 }
@@ -119,7 +139,28 @@ export async function updatePage({ pageId, title, content }) {
   // POST /api/pages/update
   const body = { pageId };
   if (title !== undefined) body.title = title;
-  if (content !== undefined) body.content = content;
+  if (content !== undefined) {
+    // Docmost uses TipTap editor which expects content as JSON, not markdown
+    // If content is a string, wrap it in a basic TipTap document structure
+    if (typeof content === 'string') {
+      body.content = {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'text',
+                text: content,
+              },
+            ],
+          },
+        ],
+      };
+    } else {
+      body.content = content;
+    }
+  }
   return postApi('/api/pages/update', body);
 }
 
