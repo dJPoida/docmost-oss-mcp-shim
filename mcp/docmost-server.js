@@ -6,8 +6,6 @@ import { fileURLToPath } from 'url';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import axios from 'axios';
-import { z } from 'zod';
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const packageJson = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf8'));
@@ -24,25 +22,6 @@ const http = axios.create({
 const server = new McpServer({
   name: 'docmost-oss-mcp-bridge',
   version: packageJson.version,
-});
-
-// ---- Schemas ----
-const SearchSchema = z.object({
-  query: z.string().min(1, 'query required'),
-  spaceId: z.string().optional(),
-});
-
-const CreatePageSchema = z.object({
-  spaceId: z.string().min(1, 'spaceId required'),
-  title: z.string().min(1, 'title required'),
-  content: z.string().default(''),
-  parentId: z.string().optional(),
-});
-
-const UpdatePageSchema = z.object({
-  pageId: z.string().min(1, 'pageId required'),
-  title: z.string().optional(),
-  content: z.string().optional(),
 });
 
 // ---- Tools ----
