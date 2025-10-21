@@ -24,6 +24,9 @@ const server = new McpServer({
   version: packageJson.version,
 });
 
+// Log version for debugging
+console.error(`Docmost MCP Server v${packageJson.version} starting...`);
+
 // ---- Tools ----
 server.registerTool(
   'docmost.listSpaces',
