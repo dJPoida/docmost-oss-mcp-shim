@@ -1,3 +1,8 @@
 npx lint-staged
 node scripts/bump-patch.js
 git add package.json
+
+# Create tag for the new version
+NEW_VERSION=$(node -p "require('./package.json').version")
+git tag "v$NEW_VERSION"
+echo "Tagged version v$NEW_VERSION"
