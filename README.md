@@ -1,8 +1,17 @@
 # Docmost OSS MCP Shim
 
-A lightweight Node.js bridge between AI agents (like **Cursor MCP**, **Claude Code**, or any Model Context Protocol tool) and your **self‑hosted Docmost OSS instance**.
+A lightweight Node.js bridge between AI agents (like **Cursor**, **Claude Desktop**, or any Model Context Protocol tool) and your **self‑hosted Docmost OSS instance**.
 
-This shim uses the **same endpoints and cookie‑based authentication** as the official Docmost API (v0.23+). It allows agents to query, search, and edit documentation just like a logged‑in user.
+## ✨ Features
+
+- 🔌 **Plug & Play MCP Integration** - Works with Cursor, Claude Desktop, and any MCP-compatible AI agent
+- 🐳 **Docker Ready** - Deploy in seconds with Docker Compose on any platform
+- 🥧 **Raspberry Pi Compatible** - Runs perfectly on ARM devices
+- 🔒 **Secure** - API key authentication and session management
+- 🔍 **Full-Text Search** - Search your documentation from within your IDE
+- 📚 **Space Management** - List and browse all your Docmost spaces
+- 🚀 **Auto-Authentication** - Handles Docmost login and cookie management automatically
+- 📦 **Zero Dependencies on Docmost** - Works with any self-hosted Docmost OSS instance (v0.23+)
 
 ---
 
@@ -17,17 +26,21 @@ Add this to your Cursor MCP configuration (`~/.cursor/mcp.json`):
   "mcpServers": {
     "docmost": {
       "command": "npx",
-      "args": ["-y", "--package=github:dJPoida/docmost-oss-mcp-shim#v0.2.21", "docmost-mcp"],
+      "args": ["-y", "--package=github:dJPoida/docmost-oss-mcp-shim#v0.2.27", "docmost-mcp"],
       "env": {
         "MCP_DOCMOST_SHIM_URL": "http://YOUR_SHIM_SERVER_IP:3888",
-        "MCP_SHIM_KEY": "change-this-long-random-string"
+        "MCP_SHIM_KEY": "your-secure-random-string"
       }
     }
   }
 }
 ```
 
-**Note:** Replace `YOUR_SHIM_SERVER_IP` with the actual IP address of the machine running the Express shim server.
+**Configuration:**
+
+- Replace `YOUR_SHIM_SERVER_IP` with the IP address of your shim server (e.g., your Raspberry Pi)
+- Replace `your-secure-random-string` with the same `SHIM_API_KEY` configured on your shim server
+- Update the version tag (`#v0.2.27`) to match the latest release
 
 ## Available Tools
 
@@ -58,29 +71,16 @@ Your AI agent can use these Docmost tools:
 
 This makes the integration useful for **documentation discovery and navigation**, but not for content editing. Content must be edited manually in the Docmost UI.
 
-## Example Usage
+## Example Usage in Cursor
 
-```javascript
-// Search for documentation
-await docmost_search({ query: 'deployment guide' });
+Simply ask Cursor natural language questions, and it will use the Docmost tools automatically:
 
-// List available spaces
-await docmost_listSpaces();
+- **"Search my Docmost for deployment documentation"**
+- **"List all my Docmost spaces"**
+- **"Create a new page called 'API Reference' in the General space"**
+- **"Find pages about environment variables"**
 
-// Create a new page
-await docmost_createPage({
-  spaceId: 'space-123',
-  title: 'New Documentation',
-  content: 'This is the content...',
-});
-
-// Update an existing page
-await docmost_updatePage({
-  pageId: 'page-456',
-  title: 'Updated Title',
-  content: 'Updated content...',
-});
-```
+Cursor will discover your documentation and help you navigate it without leaving your IDE!
 
 ---
 
@@ -89,11 +89,13 @@ await docmost_updatePage({
 ## 🚀 Why This Exists
 
 The open‑source edition of Docmost doesn't expose API keys or external automation features.  
-This shim fills that gap by acting as a local authenticated bridge.
+This shim fills that gap by acting as an authenticated bridge between AI agents and your Docmost instance.
 
 ✅ No enterprise license required  
-✅ No manual cookies or tokens  
-✅ Simple REST API agents can call locally
+✅ No manual cookie management  
+✅ Simple REST API for AI agents  
+✅ Production-ready Docker deployment  
+✅ Works on Raspberry Pi and ARM devices
 
 ## ⚙️ Setup
 
@@ -113,23 +115,30 @@ npm install
 
 ### 3️⃣ Configuration
 
-Create a `.env` file based on `.env.example`:
+Create a `.env` file in the project root:
 
 ```ini
-DOCMOST_BASE_URL=YOUR_DOCMOST_BASE_URL
-DOCMOST_EMAIL=YOUR_DEDICATED_MCP_USER_EMAIL
-DOCMOST_PASSWORD=YOUR_DEDICATED_MCP_USER_PASSWORD
+# Docmost Connection (Required)
+DOCMOST_BASE_URL=http://your-docmost-server:3000
+DOCMOST_EMAIL=your-mcp-user@example.com
+DOCMOST_PASSWORD=your-secure-password
 
-# Shim network settings
-HOST=127.0.0.1
+# Shim Network Settings (Optional)
+HOST=0.0.0.0  # Use 0.0.0.0 for Docker, 127.0.0.1 for local-only
 PORT=3888
 
-# Optional: authentication for external clients (like MCP)
-SHIM_API_KEY=change-this-long-random-string
+# Security (Required for remote access)
+SHIM_API_KEY=your-secure-random-string
 
-# Debug logging
-DEBUG_SHIM=1
+# Debug Logging (Optional)
+DEBUG_SHIM=0  # Set to 1 for verbose logging
 ```
+
+**Important:**
+
+- Create a dedicated Docmost user for the shim (don't use your personal account)
+- Use `HOST=0.0.0.0` for Docker deployments to allow external connections
+- Generate a strong random string for `SHIM_API_KEY` in production
 
 ## ▶️ Run
 
@@ -232,10 +241,17 @@ For major/minor version changes:
 
 #### MCP Users Update
 
-After a new version is released, MCP users can update their Cursor config:
+After a new version is released, MCP users can update their Cursor config to the latest version tag:
 
 ```json
-"--package=github:dJPoida/docmost-oss-mcp-shim#v0.2.21"
+{
+  "mcpServers": {
+    "docmost": {
+      "command": "npx",
+      "args": ["-y", "--package=github:dJPoida/docmost-oss-mcp-shim#v0.2.27", "docmost-mcp"]
+    }
+  }
+}
 ```
 
 ### Project structure
@@ -318,10 +334,78 @@ The Docker image is multi-arch and works on Raspberry Pi (ARM):
 # On your Raspberry Pi
 git clone https://github.com/dJPoida/docmost-oss-mcp-shim.git
 cd docmost-oss-mcp-shim
-cp .env.example .env
-# Edit .env with your settings
+
+# Create .env file with your settings
+cat > .env << EOF
+DOCMOST_BASE_URL=http://your-docmost-server:3000
+DOCMOST_EMAIL=your-mcp-user@example.com
+DOCMOST_PASSWORD=your-secure-password
+SHIM_API_KEY=$(openssl rand -hex 32)
+DEBUG_SHIM=0
+EOF
+
+# Start the service
 docker-compose up -d
+
+# Check status
+docker-compose ps
+docker-compose logs -f
 ```
+
+**Performance Notes:**
+
+- The default resource limits (0.5 CPU, 256MB RAM) work well on Raspberry Pi 3B+ and newer
+- Adjust limits in `docker-compose.yml` if needed for older hardware
+
+---
+
+## 🔍 Troubleshooting
+
+### MCP Connection Issues
+
+**Problem:** Cursor shows "No server info found"
+
+**Solutions:**
+
+1. Verify the shim server is running: `curl http://YOUR_SERVER_IP:3888/health`
+2. Check `MCP_DOCMOST_SHIM_URL` in `~/.cursor/mcp.json` is correct
+3. Ensure `MCP_SHIM_KEY` matches the `SHIM_API_KEY` in your `.env` file
+4. Restart Cursor after config changes
+
+**Problem:** "Connection refused"
+
+**Solutions:**
+
+1. Ensure Docker container is running: `docker-compose ps`
+2. Check if port 3888 is accessible: `telnet YOUR_SERVER_IP 3888`
+3. Verify firewall rules allow connections to port 3888
+4. For Docker: Ensure `HOST=0.0.0.0` in `.env` file
+
+### Authentication Issues
+
+**Problem:** "Invalid credentials" or "Login failed"
+
+**Solutions:**
+
+1. Verify credentials in `.env` file are correct
+2. Test login manually in Docmost web UI
+3. Check Docker logs: `docker-compose logs -f`
+4. Enable debug logging: `DEBUG_SHIM=1` in `.env`
+
+### Docker Issues
+
+**Problem:** Container exits immediately
+
+**Solutions:**
+
+1. Check logs: `docker-compose logs`
+2. Verify `.env` file exists and has correct format
+3. Ensure Docmost server is accessible from Docker container
+4. Try building fresh: `docker-compose down && docker-compose up --build`
+
+**Problem:** "npm ci failed" during build
+
+**Solution:** This is fixed in v0.2.27+. Update to latest version.
 
 ---
 
