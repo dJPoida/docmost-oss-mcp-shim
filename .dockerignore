@@ -9,8 +9,9 @@ scripts
 *.log
 npm-debug.log*
 .DS_Store
-README.md
 tsconfig.json
 eslint.config.js
 .editorconfig
+.dockerignore
+docker-compose.yml
 
