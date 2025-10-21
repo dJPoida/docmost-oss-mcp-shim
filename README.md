@@ -184,19 +184,37 @@ DEBUG_SHIM=1 npm start  # enable verbose logging
 
 ### Publishing New Versions
 
-To release a new version:
+#### Automatic Version Bumping
 
-1. **Update version** in `package.json`
-2. **Commit and tag** the release:
+The project automatically bumps the patch version on every commit:
+
+- **Every commit** automatically bumps the patch version (0.2.9 → 0.2.10)
+- **Works with any git tool** - IDE sidebar, command line, etc.
+- **Create tags** when ready to release:
+  ```bash
+  npm run tag  # Creates git tag from current version
+  git push --tags  # Push tags to remote
+  ```
+
+#### Manual Version Management
+
+For major/minor version changes:
+
+1. **Manually update version** in `package.json` (e.g., 0.2.7 → 0.3.0)
+2. **Commit and tag**:
    ```bash
    git commit -am "commit message"
-   git tag v0.2.4
+   npm run tag
    git push && git push --tags
    ```
-3. **MCP users** can then update their Cursor config to use the new version:
-   ```json
-   "--package=github:dJPoida/docmost-oss-mcp-shim#v0.2.4"
-   ```
+
+#### MCP Users Update
+
+After a new version is released, MCP users can update their Cursor config:
+
+```json
+"--package=github:dJPoida/docmost-oss-mcp-shim#v0.2.4"
+```
 
 ### Project structure
 

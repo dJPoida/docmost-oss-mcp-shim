@@ -1,6 +1,6 @@
 {
   "name": "docmost-oss-mcp-shim",
-  "version": "0.2.5",
+  "version": "0.2.12",
   "private": false,
   "type": "module",
   "bin": {
@@ -19,7 +19,8 @@
     "dev": "nodemon --watch src/server.js src/server.js",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "check:editorconfig": "editorconfig-checker"
+    "check:editorconfig": "editorconfig-checker",
+    "tag": "git tag v$(node -p \"require('./package.json').version\")"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.1",
