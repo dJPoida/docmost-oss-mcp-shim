@@ -261,11 +261,66 @@ dist/mcp/
 
 ---
 
-## 🐳 Docker
+## 🐳 Docker Deployment
+
+### Using Docker Compose (Recommended)
+
+1. **Create a `.env` file** with your Docmost credentials:
+
+   ```ini
+   DOCMOST_BASE_URL=http://your-docmost-server:3000
+   DOCMOST_EMAIL=your-mcp-user@example.com
+   DOCMOST_PASSWORD=your-secure-password
+   SHIM_API_KEY=change-this-long-random-string
+   DEBUG_SHIM=0
+   ```
+
+2. **Start the service**:
+
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **Check logs**:
+
+   ```bash
+   docker-compose logs -f
+   ```
+
+4. **Stop the service**:
+   ```bash
+   docker-compose down
+   ```
+
+### Using Docker CLI
 
 ```bash
+# Build the image
 docker build -t docmost-oss-mcp-shim .
-docker run -d --env-file .env -p 127.0.0.1:3888:3888 docmost-oss-mcp-shim
+
+# Run the container
+docker run -d \
+  --name docmost-mcp-shim \
+  --restart unless-stopped \
+  -p 3888:3888 \
+  -e DOCMOST_BASE_URL=http://your-docmost-server:3000 \
+  -e DOCMOST_EMAIL=your-mcp-user@example.com \
+  -e DOCMOST_PASSWORD=your-secure-password \
+  -e SHIM_API_KEY=change-this-long-random-string \
+  docmost-oss-mcp-shim
+```
+
+### Raspberry Pi Deployment
+
+The Docker image is multi-arch and works on Raspberry Pi (ARM):
+
+```bash
+# On your Raspberry Pi
+git clone https://github.com/dJPoida/docmost-oss-mcp-shim.git
+cd docmost-oss-mcp-shim
+cp .env.example .env
+# Edit .env with your settings
+docker-compose up -d
 ```
 
 ---

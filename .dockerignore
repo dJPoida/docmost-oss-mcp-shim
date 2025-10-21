@@ -1,0 +1,16 @@
+node_modules
+dist
+mcp
+scripts
+.git
+.env
+.env.local
+.husky
+*.log
+npm-debug.log*
+.DS_Store
+README.md
+tsconfig.json
+eslint.config.js
+.editorconfig
+
