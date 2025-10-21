@@ -1,32 +1,24 @@
 #!/usr/bin/env node
-
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import axios from 'axios';
 import { z } from 'zod';
 
-const SHIM_URL = process.env.MCP_DOCMOST_SHIM_URL || 'http://127.0.0.1:3888';
+const SHIM_URL = (process.env.MCP_DOCMOST_SHIM_URL || 'http://127.0.0.1:3888').replace(/\/$/, '');
 const SHIM_KEY = process.env.MCP_SHIM_KEY;
 
-const client = axios.create({
-  baseURL: SHIM_URL.replace(/\/$/, ''),
+const http = axios.create({
+  baseURL: SHIM_URL,
   headers: SHIM_KEY ? { 'X-SHIM-KEY': SHIM_KEY } : {},
-  timeout: 30_000,
+  timeout: 30000,
 });
 
-const server = new Server(
-  {
-    name: 'docmost-oss-mcp-bridge',
-    version: '0.1.0',
-  },
-  {
-    capabilities: {
-      tools: {},
-    },
-  }
-);
+const server = new McpServer({
+  name: 'docmost-oss-mcp-bridge',
+  version: '0.2.2',
+});
 
-// ---- Tool schemas ----
+// ---- Schemas ----
 const SearchSchema = z.object({
   query: z.string().min(1, 'query required'),
   spaceId: z.string().optional(),
@@ -45,52 +37,73 @@ const UpdatePageSchema = z.object({
   content: z.string().optional(),
 });
 
-// ---- Register tools ----
-server.tool('docmost.listSpaces', 'List spaces/workspaces in Docmost', async () => {
-  const { data } = await client.get('/spaces');
-  return {
-    content: [{ type: 'json', json: data }],
-  };
-});
+// ---- Tools ----
+server.registerTool(
+  'docmost.listSpaces',
+  {
+    title: 'List spaces/workspaces in Docmost',
+    description: 'Returns spaces the shim can access',
+    inputSchema: z.object({}).optional(),
+  },
+  async () => {
+    const { data } = await http.get('/spaces');
+    return { content: [{ type: 'json', json: data }] };
+  }
+);
 
-server.tool(
+server.registerTool(
   'docmost.search',
-  'Search for pages. Args: { query: string, spaceId?: string }',
-  async ({ arguments: args }) => {
-    const parsed = SearchSchema.parse(args || {});
-    const { data } = await client.post('/search', parsed);
+  {
+    title: 'Search pages',
+    description: 'Search Docmost content',
+    inputSchema: SearchSchema,
+  },
+  async (args) => {
+    const { data } = await http.post('/search', SearchSchema.parse(args ?? {}));
     return { content: [{ type: 'json', json: data }] };
   }
 );
 
-server.tool(
+server.registerTool(
   'docmost.createPage',
-  'Create a page. Args: { spaceId, title, content, parentId? }',
-  async ({ arguments: args }) => {
-    const parsed = CreatePageSchema.parse(args || {});
-    const { data } = await client.post('/pages', parsed);
+  {
+    title: 'Create a page',
+    description: 'Create a new page in a space',
+    inputSchema: CreatePageSchema,
+  },
+  async (args) => {
+    const { data } = await http.post('/pages', CreatePageSchema.parse(args ?? {}));
     return { content: [{ type: 'json', json: data }] };
   }
 );
 
-server.tool(
+server.registerTool(
   'docmost.updatePage',
-  'Update a page. Args: { pageId, title?, content? }',
-  async ({ arguments: args }) => {
-    const parsed = UpdatePageSchema.parse(args || {});
-    const { data } = await client.put('/pages', parsed);
+  {
+    title: 'Update a page',
+    description: 'Update title/content by pageId',
+    inputSchema: UpdatePageSchema,
+  },
+  async (args) => {
+    const { data } = await http.put('/pages', UpdatePageSchema.parse(args ?? {}));
     return { content: [{ type: 'json', json: data }] };
   }
 );
 
-// Basic health tool (optional)
-server.tool('docmost.health', 'Shim health check', async () => {
-  const { data } = await client.get('/health');
-  return { content: [{ type: 'json', json: data }] };
-});
+// Optional health check
+server.registerTool(
+  'docmost.health',
+  {
+    title: 'Shim health',
+    description: 'Check shim health',
+    inputSchema: z.object({}).optional(),
+  },
+  async () => {
+    const { data } = await http.get('/health');
+    return { content: [{ type: 'json', json: data }] };
+  }
+);
 
-// Start the server (stdio transport)
-server.connectStdio();
-
-// Optional: strictly validate tool calls (nice DX)
-server.router.schema = CallToolRequestSchema;
+// ---- Start (stdio transport) ----
+const transport = new StdioServerTransport();
+await server.connect(transport);
