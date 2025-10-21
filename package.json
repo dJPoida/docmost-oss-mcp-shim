@@ -1,13 +1,20 @@
 {
   "name": "docmost-oss-mcp-shim",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.2.0",
+  "private": false,
   "type": "module",
-  "engines": {
-    "node": ">=22"
+  "bin": {
+    "docmost-mcp": "mcp/docmost-server.js"
   },
+  "files": [
+    "src/**/*",
+    "mcp/**/*",
+    "README.md",
+    "LICENSE"
+  ],
   "main": "server.js",
   "scripts": {
+    "mcp": "node mcp/docmost-server.js",
     "start": "node src/server.js",
     "dev": "nodemon --watch src/server.js src/server.js",
     "lint": "eslint .",
@@ -15,11 +22,13 @@
     "check:editorconfig": "editorconfig-checker"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.1.0",
     "axios": "^1.7.7",
     "axios-cookiejar-support": "^6.0.2",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "tough-cookie": "^4.1.3"
+    "tough-cookie": "^4.1.3",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@eslint/js": "^9.11.1",
