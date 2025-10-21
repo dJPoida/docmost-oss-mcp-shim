@@ -4,22 +4,15 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import axios from 'axios';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 // Go up two levels from dist/mcp to get to project root
-const packageJson = JSON.parse(
-  readFileSync(join(__dirname, '../../package.json'), 'utf8')
-);
+const packageJson = JSON.parse(readFileSync(join(__dirname, '../../package.json'), 'utf8'));
 
-const SHIM_URL = (
-  process.env.MCP_DOCMOST_SHIM_URL || 'http://127.0.0.1:3888'
-).replace(/\/$/, '');
+const SHIM_URL = (process.env.MCP_DOCMOST_SHIM_URL || 'http://127.0.0.1:3888').replace(/\/$/, '');
 const SHIM_KEY = process.env.MCP_SHIM_KEY;
 
 const http = axios.create({
@@ -203,8 +196,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         throw new Error(`Unknown tool: ${name}`);
     }
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return {
       content: [
         {
@@ -227,4 +219,3 @@ main().catch((error) => {
   console.error('Fatal error:', error);
   process.exit(1);
 });
-
