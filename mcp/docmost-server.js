@@ -28,21 +28,10 @@ const server = new McpServer({
 console.error(`Docmost MCP Server v${packageJson.version} starting...`);
 
 // ---- Tools ----
-server.registerTool(
-  'docmost.listSpaces',
-  {
-    title: 'List spaces/workspaces in Docmost',
-    description: 'Returns spaces the shim can access',
-    inputSchema: {
-      type: 'object',
-      properties: {},
-    },
-  },
-  async () => {
-    const { data } = await http.get('/spaces');
-    return { content: [{ type: 'json', json: data }] };
-  }
-);
+server.registerTool('docmost.listSpaces', 'List spaces/workspaces in Docmost', {}, async () => {
+  const { data } = await http.get('/spaces');
+  return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
+});
 
 server.registerTool(
   'docmost.search',

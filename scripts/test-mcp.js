@@ -3,7 +3,7 @@
 import { spawn } from 'child_process';
 
 // Test the MCP server by sending MCP protocol messages
-const server = spawn('node', ['mcp/docmost-server.js'], {
+const server = spawn('node', ['dist/mcp/docmost-server.js'], {
   stdio: ['pipe', 'pipe', 'pipe'],
 });
 
@@ -39,6 +39,22 @@ setTimeout(() => {
   console.log('Sending tools/list request...');
   server.stdin.write(JSON.stringify(toolsListMessage) + '\n');
 }, 1000);
+
+// Call a tool after listing
+setTimeout(() => {
+  const callToolMessage = {
+    jsonrpc: '2.0',
+    id: 3,
+    method: 'tools/call',
+    params: {
+      name: 'docmost_health',
+      arguments: {},
+    },
+  };
+
+  console.log('Calling docmost.health tool...');
+  server.stdin.write(JSON.stringify(callToolMessage) + '\n');
+}, 2000);
 
 // Handle responses
 server.stdout.on('data', (data) => {

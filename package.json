@@ -1,20 +1,22 @@
 {
   "name": "docmost-oss-mcp-shim",
-  "version": "0.2.18",
+  "version": "0.2.19",
   "private": false,
   "type": "module",
   "bin": {
-    "docmost-mcp": "mcp/docmost-server.js"
+    "docmost-mcp": "dist/mcp/docmost-server.js"
   },
   "files": [
     "src/**/*",
-    "mcp/**/*",
+    "dist/mcp/**/*",
     "README.md",
     "LICENSE"
   ],
   "main": "server.js",
   "scripts": {
-    "mcp": "node mcp/docmost-server.js",
+    "build": "tsc",
+    "mcp": "node dist/mcp/docmost-server.js",
+    "mcp:dev": "tsx mcp/docmost-server.ts",
     "start": "node src/server.js",
     "dev": "nodemon --watch src/server.js src/server.js",
     "lint": "eslint .",
@@ -24,6 +26,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.1",
+    "zod": "^3.23.8",
     "axios": "^1.7.7",
     "axios-cookiejar-support": "^6.0.2",
     "dotenv": "^16.4.5",
@@ -32,6 +35,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.11.1",
+    "@types/node": "^22.10.2",
     "editorconfig-checker": "^5.1.2",
     "eslint": "^9.11.1",
     "eslint-config-prettier": "^9.1.0",
@@ -39,7 +43,9 @@
     "husky": "^9.1.6",
     "lint-staged": "^15.2.10",
     "nodemon": "^3.1.4",
-    "prettier": "^3.3.3"
+    "prettier": "^3.3.3",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
   },
   "lint-staged": {
     "*.{js,json,md}": [
