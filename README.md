@@ -17,7 +17,7 @@ Add this to your Cursor MCP configuration (`~/.cursor/mcp.json`):
   "mcpServers": {
     "docmost": {
       "command": "npx",
-      "args": ["-y", "--package=github:dJPoida/docmost-oss-mcp-shim#v0.2.3", "docmost-mcp"],
+      "args": ["-y", "--package=github:dJPoida/docmost-oss-mcp-shim#v0.2.21", "docmost-mcp"],
       "env": {
         "MCP_DOCMOST_SHIM_URL": "http://YOUR_SHIM_SERVER_IP:3888",
         "MCP_SHIM_KEY": "change-this-long-random-string"
@@ -33,30 +33,30 @@ Add this to your Cursor MCP configuration (`~/.cursor/mcp.json`):
 
 Your AI agent can use these Docmost tools:
 
-- **`docmost.listSpaces`** - List available workspaces/spaces
-- **`docmost.search`** - Search for pages by query (supports optional `spaceId`)
-- **`docmost.createPage`** - Create new pages in a space
-- **`docmost.updatePage`** - Update existing pages by ID
-- **`docmost.health`** - Check shim server health
+- **`docmost_listSpaces`** - List available workspaces/spaces
+- **`docmost_search`** - Search for pages by query (supports optional `spaceId`)
+- **`docmost_createPage`** - Create new pages in a space
+- **`docmost_updatePage`** - Update existing pages by ID
+- **`docmost_health`** - Check shim server health
 
 ## Example Usage
 
 ```javascript
 // Search for documentation
-await docmost.search({ query: 'deployment guide' });
+await docmost_search({ query: 'deployment guide' });
 
 // List available spaces
-await docmost.listSpaces();
+await docmost_listSpaces();
 
 // Create a new page
-await docmost.createPage({
+await docmost_createPage({
   spaceId: 'space-123',
   title: 'New Documentation',
   content: 'This is the content...',
 });
 
 // Update an existing page
-await docmost.updatePage({
+await docmost_updatePage({
   pageId: 'page-456',
   title: 'Updated Title',
   content: 'Updated content...',
@@ -177,10 +177,13 @@ curl http://127.0.0.1:3888/debug/session | jq .
 ## 🧑‍💻 Development
 
 ```bash
+npm run build  # compile TypeScript MCP server
 npm run lint    # run ESLint
 npm run format  # format with Prettier
 DEBUG_SHIM=1 npm start  # enable verbose logging
 ```
+
+**Note:** The MCP server is written in TypeScript and must be compiled before use. The pre-commit hook automatically builds and includes the compiled files in commits.
 
 ### Publishing New Versions
 
@@ -213,7 +216,7 @@ For major/minor version changes:
 After a new version is released, MCP users can update their Cursor config:
 
 ```json
-"--package=github:dJPoida/docmost-oss-mcp-shim#v0.2.4"
+"--package=github:dJPoida/docmost-oss-mcp-shim#v0.2.21"
 ```
 
 ### Project structure
@@ -226,7 +229,10 @@ src/
   logger.js          # lightweight debug logger
 
 mcp/
-  docmost-server.js # MCP server (runs on developer's machine via Cursor)
+  docmost-server.ts # MCP server TypeScript source
+
+dist/mcp/
+  docmost-server.js # Compiled MCP server (runs on developer's machine via Cursor)
 ```
 
 **Two-Server Architecture:**
@@ -257,14 +263,14 @@ Not affiliated with the official Docmost project.
 ```mermaid
 flowchart LR
   subgraph A[AI Agent / Cursor MCP]
-    X1["docmost.search()"]
-    X2["docmost.createPage()"]
+    X1["docmost_search()"]
+    X2["docmost_createPage()"]
   end
 
-  subgraph B[MCP Server]
-    M1["docmost.search"]
-    M2["docmost.createPage"]
-    M3["docmost.listSpaces"]
+  subgraph B[MCP Server TypeScript]
+    M1["docmost_search"]
+    M2["docmost_createPage"]
+    M3["docmost_listSpaces"]
   end
 
   subgraph C[Express Shim Server]

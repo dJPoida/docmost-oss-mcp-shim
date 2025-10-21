@@ -1,4 +1,9 @@
 npx lint-staged
+
+# Build TypeScript if there are changes to .ts files
+npm run build
+git add dist/
+
 node scripts/bump-patch.js
 git add package.json
 
