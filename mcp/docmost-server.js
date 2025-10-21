@@ -77,7 +77,7 @@ server.registerTool(
     },
   },
   async (args) => {
-    const { data } = await http.post('/search', SearchSchema.parse(args ?? {}));
+    const { data } = await http.post('/search', args ?? {});
     return { content: [{ type: 'json', json: data }] };
   }
 );
@@ -99,7 +99,7 @@ server.registerTool(
     },
   },
   async (args) => {
-    const { data } = await http.post('/pages', CreatePageSchema.parse(args ?? {}));
+    const { data } = await http.post('/pages', args ?? {});
     return { content: [{ type: 'json', json: data }] };
   }
 );
@@ -120,7 +120,7 @@ server.registerTool(
     },
   },
   async (args) => {
-    const { data } = await http.put('/pages', UpdatePageSchema.parse(args ?? {}));
+    const { data } = await http.put('/pages', args ?? {});
     return { content: [{ type: 'json', json: data }] };
   }
 );
