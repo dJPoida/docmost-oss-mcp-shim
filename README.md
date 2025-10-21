@@ -35,9 +35,28 @@ Your AI agent can use these Docmost tools:
 
 - **`docmost_listSpaces`** - List available workspaces/spaces
 - **`docmost_search`** - Search for pages by query (supports optional `spaceId`)
-- **`docmost_createPage`** - Create new pages in a space
-- **`docmost_updatePage`** - Update existing pages by ID
+- **`docmost_createPage`** - Create new page metadata (⚠️ content not supported)
+- **`docmost_updatePage`** - Update page metadata (⚠️ content not supported)
 - **`docmost_health`** - Check shim server health
+
+### ⚠️ Current Limitations
+
+**The Docmost OSS API does not currently support reading or writing page content.** This integration can:
+
+✅ **What Works:**
+
+- List spaces and their metadata
+- Search pages and see content highlights/snippets
+- Create page structure (title, parent, space)
+- Update page metadata (title only)
+
+❌ **What Doesn't Work:**
+
+- Reading full page content
+- Creating pages with content
+- Updating page content
+
+This makes the integration useful for **documentation discovery and navigation**, but not for content editing. Content must be edited manually in the Docmost UI.
 
 ## Example Usage
 
@@ -207,7 +226,7 @@ For major/minor version changes:
 2. **Commit and tag**:
    ```bash
    git commit -am "commit message"
-   npm run tag
+   git tag <version>
    git push && git push --tags
    ```
 

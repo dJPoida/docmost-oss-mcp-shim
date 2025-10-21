@@ -68,7 +68,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'docmost_createPage',
-        description: 'Create a new page in Docmost',
+        description: 'Create a new page in Docmost (LIMITATION: Content creation is not currently supported by Docmost API - only page metadata like title and structure)',
         inputSchema: {
           type: 'object',
           properties: {
@@ -82,7 +82,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
             content: {
               type: 'string',
-              description: 'Page content',
+              description: 'Page content (NOTE: Not currently supported by Docmost API - this parameter is ignored)',
             },
             parentId: {
               type: 'string',
@@ -94,7 +94,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'docmost_updatePage',
-        description: 'Update an existing page in Docmost',
+        description: 'Update an existing page in Docmost (LIMITATION: Content updates are not currently supported by Docmost API - only metadata like title can be updated)',
         inputSchema: {
           type: 'object',
           properties: {
@@ -108,7 +108,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
             content: {
               type: 'string',
-              description: 'New page content',
+              description: 'New page content (NOTE: Not currently supported by Docmost API - this parameter is ignored)',
             },
           },
           required: ['pageId'],
@@ -157,6 +157,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'docmost_createPage': {
+        // NOTE: Docmost API limitation - content parameter is accepted but ignored
+        // Only page structure (title, space, parent) is created
         const { data } = await http.post('/pages', args);
         return {
           content: [
@@ -169,6 +171,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'docmost_updatePage': {
+        // NOTE: Docmost API limitation - content parameter is accepted but ignored
+        // Only page metadata (title) can be updated
         const { data } = await http.put('/pages', args);
         return {
           content: [
