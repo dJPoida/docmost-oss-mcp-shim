@@ -6,16 +6,75 @@ This shim uses the **same endpoints and cookie‑based authentication** as the o
 
 ---
 
+# 🤖 For MCP Users (AI Agents)
+
+## Quick Start with Cursor
+
+Add this to your Cursor MCP configuration (`~/.cursor/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "docmost": {
+      "command": "npx",
+      "args": ["-y", "--package=github:dJPoida/docmost-oss-mcp-shim#v0.2.3", "docmost-mcp"],
+      "env": {
+        "MCP_DOCMOST_SHIM_URL": "http://YOUR_SHIM_SERVER_IP:3888",
+        "MCP_SHIM_KEY": "change-this-long-random-string"
+      }
+    }
+  }
+}
+```
+
+**Note:** Replace `YOUR_SHIM_SERVER_IP` with the actual IP address of the machine running the Express shim server.
+
+## Available Tools
+
+Your AI agent can use these Docmost tools:
+
+- **`docmost.listSpaces`** - List available workspaces/spaces
+- **`docmost.search`** - Search for pages by query (supports optional `spaceId`)
+- **`docmost.createPage`** - Create new pages in a space
+- **`docmost.updatePage`** - Update existing pages by ID
+- **`docmost.health`** - Check shim server health
+
+## Example Usage
+
+```javascript
+// Search for documentation
+await docmost.search({ query: 'deployment guide' });
+
+// List available spaces
+await docmost.listSpaces();
+
+// Create a new page
+await docmost.createPage({
+  spaceId: 'space-123',
+  title: 'New Documentation',
+  content: 'This is the content...',
+});
+
+// Update an existing page
+await docmost.updatePage({
+  pageId: 'page-456',
+  title: 'Updated Title',
+  content: 'Updated content...',
+});
+```
+
+---
+
+# 🛠️ For Shim Server Operators
+
 ## 🚀 Why This Exists
 
-The open‑source edition of Docmost doesn’t expose API keys or external automation features.  
+The open‑source edition of Docmost doesn't expose API keys or external automation features.  
 This shim fills that gap by acting as a local authenticated bridge.
 
 ✅ No enterprise license required  
 ✅ No manual cookies or tokens  
 ✅ Simple REST API agents can call locally
-
----
 
 ## ⚙️ Setup
 
@@ -53,8 +112,6 @@ SHIM_API_KEY=change-this-long-random-string
 DEBUG_SHIM=1
 ```
 
----
-
 ## ▶️ Run
 
 ```bash
@@ -67,8 +124,6 @@ Then verify:
 curl http://127.0.0.1:3888/health
 # → {"ok":true}
 ```
-
----
 
 ## 🧠 How It Works
 
@@ -85,8 +140,6 @@ The shim mirrors that behavior and manages session cookies automatically.
 Authentication is handled via the `authToken` cookie issued by `/api/auth/login`.  
 The shim logs in automatically and refreshes sessions when expired.
 
----
-
 ## 🔒 Security
 
 - **Do not** expose this server to the public internet.  
@@ -94,29 +147,6 @@ The shim logs in automatically and refreshes sessions when expired.
 - Use a **dedicated Docmost account** for automation.
 - Protect the `.env` file; it contains login credentials.
 - Enable `SHIM_API_KEY` if you expect external tools to connect.
-
----
-
-## 🧩 Example MCP Integration
-
-```json
-{
-  "tools": {
-    "docmost": {
-      "baseUrl": "http://127.0.0.1:3888",
-      "headers": {
-        "X-SHIM-KEY": "change-this-long-random-string"
-      }
-    }
-  }
-}
-```
-
-Your agent can then run actions such as:
-
-- `POST /search` → `{ "query": "deployment" }`
-- `POST /pages` → `{ "spaceId": "...", "title": "New Page", "content": "..." }`
-- `PUT /pages` → `{ "pageId": "...", "title": "Updated" }`
 
 ---
 
@@ -156,11 +186,19 @@ DEBUG_SHIM=1 npm start  # enable verbose logging
 
 ```
 src/
-  server.js          # main entry point (Express server)
+  server.js          # Express shim server (runs on remote machine)
   routes.js          # defines REST endpoints
   docmostClient.js   # handles login, cookies, API calls
   logger.js          # lightweight debug logger
+
+mcp/
+  docmost-server.js # MCP server (runs on developer's machine via Cursor)
 ```
+
+**Two-Server Architecture:**
+
+- **Express Shim Server** (`src/`) - Runs on remote machine, connects to Docmost OSS
+- **MCP Server** (`mcp/`) - Runs on developer's machine, connects to Express shim
 
 ---
 
@@ -184,23 +222,30 @@ Not affiliated with the official Docmost project.
 
 ```mermaid
 flowchart LR
-  subgraph A[AI Agent / MCP Client]
-    X1["searchDocs()"]
-    X2["createPage()"]
+  subgraph A[AI Agent / Cursor MCP]
+    X1["docmost.search()"]
+    X2["docmost.createPage()"]
   end
 
-  subgraph B[Docmost OSS MCP Shim]
+  subgraph B[MCP Server]
+    M1["docmost.search"]
+    M2["docmost.createPage"]
+    M3["docmost.listSpaces"]
+  end
+
+  subgraph C[Express Shim Server]
     S1["/search (POST)"]
     S2["/pages (POST/PUT)"]
     S3["/spaces (POST)"]
   end
 
-  subgraph C[Docmost OSS Server]
+  subgraph D[Docmost OSS Server]
     D1["/api/search"]
     D2["/api/pages/create"]
-    D3["/api/pages/update"]
+    D3["/api/spaces"]
   end
 
-  A -->|JSON over HTTP + X-SHIM-KEY| B
-  B -->|authToken cookie| C
+  A -->|MCP Protocol| B
+  B -->|HTTP + X-SHIM-KEY| C
+  C -->|authToken cookie| D
 ```
