@@ -51,7 +51,10 @@ server.registerTool(
   {
     title: 'List spaces/workspaces in Docmost',
     description: 'Returns spaces the shim can access',
-    inputSchema: z.object({}).optional(),
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
   },
   async () => {
     const { data } = await http.get('/spaces');
@@ -64,7 +67,14 @@ server.registerTool(
   {
     title: 'Search pages',
     description: 'Search Docmost content',
-    inputSchema: SearchSchema,
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string' },
+        spaceId: { type: 'string' },
+      },
+      required: ['query'],
+    },
   },
   async (args) => {
     const { data } = await http.post('/search', SearchSchema.parse(args ?? {}));
@@ -77,7 +87,16 @@ server.registerTool(
   {
     title: 'Create a page',
     description: 'Create a new page in a space',
-    inputSchema: CreatePageSchema,
+    inputSchema: {
+      type: 'object',
+      properties: {
+        spaceId: { type: 'string' },
+        title: { type: 'string' },
+        content: { type: 'string' },
+        parentId: { type: 'string' },
+      },
+      required: ['spaceId', 'title'],
+    },
   },
   async (args) => {
     const { data } = await http.post('/pages', CreatePageSchema.parse(args ?? {}));
@@ -90,7 +109,15 @@ server.registerTool(
   {
     title: 'Update a page',
     description: 'Update title/content by pageId',
-    inputSchema: UpdatePageSchema,
+    inputSchema: {
+      type: 'object',
+      properties: {
+        pageId: { type: 'string' },
+        title: { type: 'string' },
+        content: { type: 'string' },
+      },
+      required: ['pageId'],
+    },
   },
   async (args) => {
     const { data } = await http.put('/pages', UpdatePageSchema.parse(args ?? {}));
@@ -104,7 +131,10 @@ server.registerTool(
   {
     title: 'Shim health',
     description: 'Check shim health',
-    inputSchema: z.object({}).optional(),
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
   },
   async () => {
     const { data } = await http.get('/health');
