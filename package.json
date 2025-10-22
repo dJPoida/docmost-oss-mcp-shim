@@ -1,24 +1,24 @@
 {
   "name": "docmost-oss-mcp-shim",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "private": false,
   "type": "module",
   "bin": {
-    "docmost-mcp": "dist/mcp/docmost-server.js"
+    "docmost-mcp": "dist/mcp/docmostServer.js"
   },
   "files": [
     "src/**/*",
-    "dist/mcp/**/*",
+    "dist/**/*",
     "README.md",
     "LICENSE"
   ],
   "main": "server.js",
   "scripts": {
     "build": "tsc",
-    "mcp": "node dist/mcp/docmost-server.js",
-    "mcp:dev": "tsx mcp/docmost-server.ts",
-    "start": "node dist/src/server.js",
-    "dev": "nodemon --watch src --ext ts --exec \"npm run build && node dist/src/server.js\"",
+    "mcp": "node dist/mcp/docmostServer.js",
+    "mcp:dev": "tsx src/mcp/docmostServer.ts",
+    "start": "node dist/server/server.js",
+    "dev": "nodemon --watch src --ext ts --exec \"npm run build && node dist/server/server.js\"",
     "dev:watch": "nodemon --watch src --ext ts --exec \"npm run build\"",
     "lint": "eslint .",
     "format": "prettier --write .",

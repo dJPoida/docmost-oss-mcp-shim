@@ -476,4 +476,4 @@ main().catch((error) => {
     console.error('Fatal error:', error);
     process.exit(1);
 });
-//# sourceMappingURL=docmost-server.js.map
+//# sourceMappingURL=docmostServer.js.map

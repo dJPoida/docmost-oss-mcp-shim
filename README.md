@@ -316,25 +316,25 @@ After a new version is released, MCP users can update their Cursor config to the
 
 ```
 src/
-  server.ts          # Express shim server (runs on remote machine)
-  routes.ts          # defines REST endpoints
-  docmostClient.ts   # handles login, cookies, API calls
-  logger.ts          # lightweight debug logger
-  cache.ts           # LRU cache implementation
-  types.ts           # shared TypeScript interfaces
-
-mcp/
-  docmost-server.ts # MCP server TypeScript source
+  server/            # Express shim server (runs on remote machine)
+    server.ts        # Main server entry point
+    routes.ts        # defines REST endpoints
+    docmostClient.ts # handles login, cookies, API calls
+    logger.ts        # lightweight debug logger
+    cache.ts         # LRU cache implementation
+    types.ts         # shared TypeScript interfaces
+  mcp/               # MCP server TypeScript source
+    docmostServer.ts # MCP server implementation
 
 dist/
-  src/              # Compiled Express server
-  mcp/              # Compiled MCP server (runs on developer's machine via Cursor)
+  server/            # Compiled Express server
+  mcp/               # Compiled MCP server (runs on developer's machine via Cursor)
 ```
 
 **Two-Server Architecture:**
 
-- **Express Shim Server** (`src/`) - Runs on remote machine, connects to Docmost OSS
-- **MCP Server** (`mcp/`) - Runs on developer's machine, connects to Express shim
+- **Express Shim Server** (`src/server/`) - Runs on remote machine, connects to Docmost OSS
+- **MCP Server** (`src/mcp/`) - Runs on developer's machine, connects to Express shim
 
 ---
 
