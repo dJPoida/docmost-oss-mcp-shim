@@ -26,7 +26,7 @@ Add this to your Cursor MCP configuration (`~/.cursor/mcp.json`):
   "mcpServers": {
     "docmost": {
       "command": "npx",
-      "args": ["-y", "--package=github:dJPoida/docmost-oss-mcp-shim#v0.2.27", "docmost-mcp"],
+      "args": ["-y", "--package=github:dJPoida/docmost-oss-mcp-shim#v0.5.0", "docmost-mcp"],
       "env": {
         "MCP_DOCMOST_SHIM_URL": "http://YOUR_SHIM_SERVER_IP:3888",
         "MCP_SHIM_KEY": "your-secure-random-string"
@@ -40,36 +40,67 @@ Add this to your Cursor MCP configuration (`~/.cursor/mcp.json`):
 
 - Replace `YOUR_SHIM_SERVER_IP` with the IP address of your shim server (e.g., your Raspberry Pi)
 - Replace `your-secure-random-string` with the same `SHIM_API_KEY` configured on your shim server
-- Update the version tag (`#v0.2.27`) to match the latest release
+- Update the version tag (`#v0.5.0`) to match the latest release
 
 ## Available Tools
 
 Your AI agent can use these Docmost tools:
 
 - **`docmost_listSpaces`** - List available workspaces/spaces
-- **`docmost_search`** - Search for pages by query (supports optional `spaceId`)
-- **`docmost_createPage`** - Create new page metadata (⚠️ content not supported)
-- **`docmost_updatePage`** - Update page metadata (⚠️ content not supported)
+- **`docmost_search`** - Search for pages by query (supports optional `spaceId`, pagination)
+- **`docmost_getPage`** - Get full page content including attachments and diagrams ✅ **NEW!**
+- **`docmost_getSpacePages`** - Get all pages in a specific space ✅ **NEW!**
+- **`docmost_getAttachment`** - Get attachment content including draw.io diagrams ✅ **NEW!**
+- **`docmost_getPageHistory`** - Get page version history and evolution ✅ **NEW!**
+- **`docmost_getPageBreadcrumbs`** - Get page hierarchy and navigation context ✅ **NEW!**
+- **`docmost_getComments`** - Get comments and discussions on pages ✅ **NEW!**
 - **`docmost_health`** - Check shim server health
 
-### ⚠️ Current Limitations
+## Available Resources
 
-**The Docmost OSS API does not currently support reading or writing page content.** This integration can:
+Browse your Docmost documentation hierarchy:
+
+- **`docmost://spaces`** - List of all available spaces
+- **`docmost://all-pages`** - Complete overview of all pages across all spaces ✅ **NEW!**
+- **`docmost://space/{spaceId}`** - Pages within a specific space
+- **`docmost://page/{pageId}`** - Individual page metadata
+
+## Available Prompts
+
+Get guided assistance for documentation discovery:
+
+- **`search-docs`** - Best practices for effective documentation search
+
+### ✅ Enhanced Capabilities (v0.5.0+)
+
+**Major Update: Full Page Content Access!** This integration now supports:
 
 ✅ **What Works:**
 
 - List spaces and their metadata
-- Search pages and see content highlights/snippets
-- Create page structure (title, parent, space)
-- Update page metadata (title only)
+- Search pages and see content highlights/snippets (with pagination)
+- **🆕 Read full page content including text, headings, and embedded content**
+- **🆕 Access draw.io diagrams and other embedded attachments**
+- **🆕 Download actual attachment content (SVG, images, files)**
+- **🆕 Browse complete page hierarchies within spaces**
+- **🆕 Get attachment metadata and references**
+- **🆕 Access page version history and track documentation evolution**
+- **🆕 Understand page hierarchy and navigation context**
+- **🆕 Read comments and discussions for additional context**
+- **🆕 Get comprehensive overview of all documentation at once**
+- Browse page hierarchies via MCP resources
+- Get guided prompts for documentation discovery
+- Cached responses for improved performance
+- Automatic retry with exponential backoff for network resilience
 
-❌ **What Doesn't Work:**
+❌ **What This MCP Cannot Do (Read-Only Design):**
 
-- Reading full page content
-- Creating pages with content
-- Updating page content
+- Create or modify pages
+- Update page content or metadata
+- Manage users, spaces, or permissions
+- Any administrative functions
 
-This makes the integration useful for **documentation discovery and navigation**, but not for content editing. Content must be edited manually in the Docmost UI.
+This MCP is designed as a **read-only documentation access tool** for AI agents. It provides comprehensive access to documentation content, structure, and context while maintaining a clear separation from administrative functions. All content editing must be done manually in the Docmost UI.
 
 ## Example Usage in Cursor
 
@@ -77,7 +108,13 @@ Simply ask Cursor natural language questions, and it will use the Docmost tools 
 
 - **"Search my Docmost for deployment documentation"**
 - **"List all my Docmost spaces"**
-- **"Create a new page called 'API Reference' in the General space"**
+- **"Show me the Environment Overview page with the draw.io diagram"**
+- **"Get all pages in the Environments space"**
+- **"Give me an overview of all documentation pages"**
+- **"Download the draw.io diagram from the Environment Overview page"**
+- **"Show me the version history of the Environment Overview page"**
+- **"Get the breadcrumbs and hierarchy for this page"**
+- **"Show me any comments or discussions on this documentation"**
 - **"Find pages about environment variables"**
 
 Cursor will discover your documentation and help you navigate it without leaving your IDE!
@@ -132,6 +169,16 @@ SHIM_API_KEY=your-secure-random-string
 
 # Debug Logging (Optional)
 DEBUG_SHIM=0  # Set to 1 for verbose logging
+
+# Cache Settings (Optional)
+CACHE_SPACES_TTL=300      # Spaces cache TTL in seconds (default: 5 minutes)
+CACHE_SEARCH_TTL=120      # Search cache TTL in seconds (default: 2 minutes)
+CACHE_MAX_ENTRIES=100     # Maximum cache entries (default: 100)
+
+# Retry Settings (Optional)
+RETRY_MAX_ATTEMPTS=3       # Maximum retry attempts (default: 3)
+RETRY_MIN_TIMEOUT=1000     # Minimum retry timeout in ms (default: 1s)
+RETRY_MAX_TIMEOUT=30000    # Maximum retry timeout in ms (default: 30s)
 ```
 
 **Important:**
@@ -184,11 +231,20 @@ The shim logs in automatically and refreshes sessions when expired.
 # Health check
 curl http://127.0.0.1:3888/health
 
+# Detailed health check (includes Docmost connectivity)
+curl http://127.0.0.1:3888/health/detailed | jq .
+
 # List spaces
 curl -H "X-SHIM-KEY: change-this-long-random-string"      http://127.0.0.1:3888/spaces | jq .
 
-# Search for pages
-curl -X POST -H "Content-Type: application/json"      -H "X-SHIM-KEY: change-this-long-random-string"      -d '{"query": "Docmost"}'      http://127.0.0.1:3888/search | jq .
+# Search for pages (with pagination)
+curl -X POST -H "Content-Type: application/json"      -H "X-SHIM-KEY: change-this-long-random-string"      -d '{"query": "Docmost", "page": 1, "limit": 20}'      http://127.0.0.1:3888/search | jq .
+
+# Get pages in a space
+curl -H "X-SHIM-KEY: change-this-long-random-string"      http://127.0.0.1:3888/spaces/YOUR_SPACE_ID/pages | jq .
+
+# Get specific page metadata
+curl -H "X-SHIM-KEY: change-this-long-random-string"      http://127.0.0.1:3888/pages/YOUR_PAGE_ID | jq .
 
 # Create new page
 curl -X POST -H "Content-Type: application/json"      -H "X-SHIM-KEY: change-this-long-random-string"      -d '{"spaceId": "YOUR_SPACE_ID", "title": "MCP Test Page", "content": "Hello world"}'      http://127.0.0.1:3888/pages | jq .
@@ -196,7 +252,7 @@ curl -X POST -H "Content-Type: application/json"      -H "X-SHIM-KEY: change-thi
 # Update page
 curl -X PUT -H "Content-Type: application/json"      -H "X-SHIM-KEY: change-this-long-random-string"      -d '{"pageId": "YOUR_PAGE_ID", "title": "MCP Test Page (Updated)"}'      http://127.0.0.1:3888/pages | jq .
 
-# Debug current session / cookies
+# Debug current session / cookies / cache stats
 curl http://127.0.0.1:3888/debug/session | jq .
 ```
 
@@ -205,13 +261,15 @@ curl http://127.0.0.1:3888/debug/session | jq .
 ## 🧑‍💻 Development
 
 ```bash
-npm run build  # compile TypeScript MCP server
-npm run lint    # run ESLint
-npm run format  # format with Prettier
+npm run build     # compile TypeScript (both MCP server and Express server)
+npm run lint      # run ESLint on TypeScript and JavaScript files
+npm run format    # format with Prettier
+npm run dev       # development mode with auto-rebuild
+npm run dev:watch # watch mode for development
 DEBUG_SHIM=1 npm start  # enable verbose logging
 ```
 
-**Note:** The MCP server is written in TypeScript and must be compiled before use. The pre-commit hook automatically builds and includes the compiled files in commits.
+**Note:** Both the MCP server and Express server are now written in TypeScript and must be compiled before use. The pre-commit hook automatically builds and includes the compiled files in commits.
 
 ### Publishing New Versions
 
@@ -258,16 +316,19 @@ After a new version is released, MCP users can update their Cursor config to the
 
 ```
 src/
-  server.js          # Express shim server (runs on remote machine)
-  routes.js          # defines REST endpoints
-  docmostClient.js   # handles login, cookies, API calls
-  logger.js          # lightweight debug logger
+  server.ts          # Express shim server (runs on remote machine)
+  routes.ts          # defines REST endpoints
+  docmostClient.ts   # handles login, cookies, API calls
+  logger.ts          # lightweight debug logger
+  cache.ts           # LRU cache implementation
+  types.ts           # shared TypeScript interfaces
 
 mcp/
   docmost-server.ts # MCP server TypeScript source
 
-dist/mcp/
-  docmost-server.js # Compiled MCP server (runs on developer's machine via Cursor)
+dist/
+  src/              # Compiled Express server
+  mcp/              # Compiled MCP server (runs on developer's machine via Cursor)
 ```
 
 **Two-Server Architecture:**
@@ -416,6 +477,40 @@ Not affiliated with the official Docmost project.
 
 ---
 
+## 🆕 New Features (v0.3.0+)
+
+### Enhanced Reliability
+
+- **Automatic Retry Logic**: Network requests automatically retry with exponential backoff (1s → 2s → 4s)
+- **Comprehensive Health Checks**: `/health/detailed` endpoint validates Docmost connectivity and authentication
+- **TypeScript Migration**: Full type safety for the Express server with shared interfaces
+
+### Performance Improvements
+
+- **LRU Caching**: Spaces and search results are cached with configurable TTL
+- **Pagination Support**: Search results support pagination with metadata
+- **Cache Invalidation**: Caches automatically invalidate when content changes
+
+### Enhanced MCP Features
+
+- **MCP Resources**: Browse documentation hierarchy (`docmost://spaces`, `docmost://space/{id}`, `docmost://page/{id}`)
+- **MCP Prompts**: Guided assistance for common tasks (create-page, search-docs, update-page-title)
+- **Extended Tool Parameters**: Search tools now support pagination parameters
+
+### Configuration Options
+
+```ini
+# Cache settings
+CACHE_SPACES_TTL=300      # 5 minutes
+CACHE_SEARCH_TTL=120      # 2 minutes
+CACHE_MAX_ENTRIES=100
+
+# Retry settings
+RETRY_MAX_ATTEMPTS=3
+RETRY_MIN_TIMEOUT=1000
+RETRY_MAX_TIMEOUT=30000
+```
+
 ## 🔁 Architecture Overview
 
 ```mermaid
@@ -423,18 +518,24 @@ flowchart LR
   subgraph A[AI Agent / Cursor MCP]
     X1["docmost_search()"]
     X2["docmost_createPage()"]
+    X3["MCP Resources"]
+    X4["MCP Prompts"]
   end
 
   subgraph B[MCP Server TypeScript]
     M1["docmost_search"]
     M2["docmost_createPage"]
     M3["docmost_listSpaces"]
+    M4["Resources & Prompts"]
   end
 
   subgraph C[Express Shim Server]
     S1["/search (POST)"]
     S2["/pages (POST/PUT)"]
-    S3["/spaces (POST)"]
+    S3["/spaces (GET)"]
+    S4["/spaces/:id/pages (GET)"]
+    S5["/pages/:id (GET)"]
+    S6["/health/detailed (GET)"]
   end
 
   subgraph D[Docmost OSS Server]
@@ -443,7 +544,13 @@ flowchart LR
     D3["/api/spaces"]
   end
 
+  subgraph E[Cache Layer]
+    E1["LRU Cache"]
+    E2["Retry Logic"]
+  end
+
   A -->|MCP Protocol| B
   B -->|HTTP + X-SHIM-KEY| C
-  C -->|authToken cookie| D
+  C -->|Cached/Retry| E
+  E -->|authToken cookie| D
 ```

@@ -12,6 +12,8 @@ pnpm-debug.log*
 .cookies*
 cookies.txt
 
+.resources
+
 # OS/editor
 .DS_Store
 Thumbs.db

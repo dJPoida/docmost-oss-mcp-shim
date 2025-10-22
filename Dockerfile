@@ -10,8 +10,8 @@ COPY package*.json ./
 # Install production dependencies only
 RUN npm ci --omit=dev
 
-# Copy source files
-COPY src/ ./src/
+# Copy compiled TypeScript output
+COPY dist/ ./dist/
 
 # Expose the default port
 EXPOSE 3888
@@ -21,5 +21,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3888/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 # Start the Express shim server
-CMD ["node", "src/server.js"]
+CMD ["node", "dist/src/server.js"]
 

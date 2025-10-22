@@ -15,6 +15,6 @@
     "declarationMap": true,
     "sourceMap": true
   },
-  "include": ["mcp/**/*", "scripts/**/*"],
-  "exclude": ["node_modules", "dist", "src"]
+  "include": ["mcp/**/*", "scripts/**/*", "src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }
